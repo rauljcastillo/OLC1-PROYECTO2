@@ -27,11 +27,11 @@ export class Especiales extends Instruccion {
                 }
             case "4":        //truncate
                 if(a.type==Tipo.DOUBLE){
-                    return {valor: Math.trunc(a.valor), type: Tipo.DOUBLE}
+                    return {valor: Math.trunc(a.valor), type: Tipo.INT}
                 }
             case "5":     //ROund
                 if(a.type==Tipo.DOUBLE || a.type==Tipo.INT){
-                    return {valor: Math.round(a.valor), type: Tipo.INT}
+                    return {valor: Math.round(a.valor), type: a.type}
                 }
             case "6":  //Typeof
                 return {valor: `${Tipo[a.type]}`, type: Tipo.STRING}

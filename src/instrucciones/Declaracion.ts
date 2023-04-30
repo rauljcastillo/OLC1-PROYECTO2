@@ -14,7 +14,7 @@ export class Declaracion extends Instruccion {
         if (this.valor) {
             let { valor, type } = this.valor.ejecutar(entorno,consola);
             if (this.tipo == type) {
-                let result = entorno.guardar(this.tipo, this.id, valor);
+                let result = entorno.guardar(this.tipo, this.id, valor,this.linea,this.columna);
                 
                 if (!result) {
                     throw new Error(`Variabe ${this.id} ya existe`);
@@ -25,7 +25,7 @@ export class Declaracion extends Instruccion {
             return;
         }
 
-        if(!entorno.guardar(this.tipo,this.id,null)){
+        if(!entorno.guardar(this.tipo,this.id,null,this.linea,this.columna)){
             throw new Error(`Variabe ${this.id} ya existe`);
         }
     }

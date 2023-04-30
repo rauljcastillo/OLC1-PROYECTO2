@@ -14,11 +14,11 @@ export class Ambiente {
         this.metodos = new Map();
     }
 
-    public guardar(tipo: Tipo, id: string, valor: any | null) {
+    public guardar(tipo: Tipo, id: string, valor: any | null,linea:number,columna:number) {
         let entorno: Ambiente = this;
         if (!entorno.variables.has(id)) {
             this.variables.set(id, new Variable(tipo, id, valor));
-            (entorno.anterior==null)?tabla.save({id,tipo,valor:"Global"}):tabla.save({id,tipo,valor:"Local"}) ;
+            (entorno.anterior==null)?tabla.save({id,tipo,valor:"Global",linea,columna}):tabla.save({id,tipo,valor:"Local",linea,columna}) ;
             return true
         }
         return false;
@@ -52,10 +52,11 @@ export class Ambiente {
         }
         return null
     }
-
-    public guardarFuncion(tipo: Tipo, id: string, params: any | null, bloq: Instruccion) {
+    //Guardar el tpo de funcion que retorna y tipo 
+    public guardarFuncion(tipo: Tipo, id: string, params: any | null, bloq: Instruccion,linea:number,columna:number) {
         if (!this.metodos.has(id)) {
-            this.metodos.set(id, new Funcion(tipo, id, params, bloq))
+            this.metodos.set(id, new Funcion(tipo, id, params, bloq));
+            (this.anterior==null)?tabla.save({id,tipo,valor:"Global",linea,columna}):tabla.save({id,tipo,valor:"Local",linea,columna});
             return;
         }
     }
@@ -70,13 +71,6 @@ export class Ambiente {
         }
     }
 
-    public getGlobal() {
-        let entorno: Ambiente = this;
-        while (entorno != null) {
-            entorno = entorno.anterior
-        }
-        return entorno
-    }
 
 
 }

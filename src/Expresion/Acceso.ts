@@ -8,8 +8,6 @@ export class Acceso extends Expresion {
     constructor(id: string,linea:number,columna:number){
         super(linea,columna);
         this.id=id;
-
-        
     }
 
     public ejecutar(entorno:Ambiente) {

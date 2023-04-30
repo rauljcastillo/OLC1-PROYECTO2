@@ -10,9 +10,9 @@ export class AsignarA extends Instruccion{
     }
 
     public ejecutar(entorno: Ambiente, consola: Consola): void {
-        let pos=this.position.ejecutar(entorno,null);
-        let val=this.nuevoValor.ejecutar(entorno,null);
-        let arrBase=entorno.getVariable(this.id);
+        let pos=this.position.ejecutar(entorno,null);   //Retorna el valor de la posición
+        let val=this.nuevoValor.ejecutar(entorno,null); //Retorna el nuevo valor a agregar
+        let arrBase=entorno.getVariable(this.id);       // Busca en la tabla de simbolos el nombre del array
         if(arrBase==null){
             throw new Error("No existe la variable xd");
         }

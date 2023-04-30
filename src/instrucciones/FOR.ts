@@ -19,7 +19,8 @@ export class FOR extends Instruccion {
             while (a.valor) {                                   
                 retorno=this.instrucciones.ejecutar(nuevo, consola);    //Ejecuto todas las intrucciones que vengan dentro del for
                 if(retorno!=null){
-                    if(retorno.type=="break") return;
+                    if(retorno.type=="break") break;
+                    else if(retorno.type=="return" || (retorno.type!="break" && retorno.type!="continue")) return retorno;
                 }
                 this.actualz.ejecutar(nuevo, consola);          //Actualizo la variable de incremento o decremento
                 a.valor = this.condicion.ejecutar(nuevo,null).valor;

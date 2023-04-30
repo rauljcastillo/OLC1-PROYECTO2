@@ -4,7 +4,10 @@ export enum Tipo{
     BOOLEAN,
     CHAR,
     STRING,
-    VOID
+    VOID,
+    FUNCION,
+    Array,
+    Lista
 }
 
 export type RETORNOS={

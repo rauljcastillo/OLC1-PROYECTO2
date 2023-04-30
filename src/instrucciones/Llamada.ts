@@ -37,7 +37,7 @@ export class Llamada extends Instruccion {
             }else if(funcion.getTipo()!=Tipo.VOID){
                 throw new Error(`La funcion debe retornar ${Tipo[funcion.getTipo()]}`);
             }
-            
+            return;
             
         }
 
@@ -51,6 +51,6 @@ export class Llamada extends Instruccion {
         }else if(funcion.getTipo()!=Tipo.VOID){
             throw new Error(`La funcion debe retornar ${Tipo[funcion.getTipo()]}`);
         }
-
+        return;
     }
 }

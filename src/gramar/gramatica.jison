@@ -139,6 +139,7 @@
     const {AccesLista}=require("../Expresion/AccesoList");
     const {TERNARIO}=require("../instrucciones/Ternario");
     const {Especiales}=require("../instrucciones/FuncEspec");
+    const {Main}=require("../instrucciones/Main");
 %}
 
 %left '?' ':'
@@ -156,7 +157,7 @@
 
 //Gramatica
 %start INICIO
-
+%ebnf
 %%
 
 INICIO: instrucciones EOF {return $1;}
@@ -185,7 +186,7 @@ instruccion:
     | RETORNO       {$$=$1;}
     | Listas        {$$=$1;}
     | AsignList     {$$=$1;}
-    | MAIN Llamada  {$$=$1;}
+    | MAIN Llamada  {$$=new Main($2,@1.first_line,@1.first_column);}
     | NewAsignacion {$$=$1;}
     | LENG
     | TOLOW
@@ -330,8 +331,9 @@ NewAsignacion: ID '[[' Expresion ']]' '=' Expresion ';'  {$$=new AsignLista($1,$
 ;
 
 
-Expresion:
-    '(' Expresion ')'
+Expresion: 
+    '(' Expresion ')'                          {$$=$2;}
+    //| '(' TIPO ')' Expresion 
     | Expresion '*' Expresion                  {$$= new Aritmeticas($1,"*",$3,@1.first_line,@1.first_column);}
     | '-' Expresion      %prec UMENOS        {$$=new Aritmeticas(new Literal(0,Tipo.INT,@1.first_line,@1.first_column),"NEG",$2,@1.first_line,@1.first_column);}
     | Expresion '+' Expresion   {$$= new Aritmeticas($1,"+",$3,@1.first_line,@1.first_column);}

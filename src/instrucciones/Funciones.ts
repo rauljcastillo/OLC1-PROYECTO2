@@ -11,7 +11,7 @@ export class Funciones extends Instruccion {
 
     public ejecutar(entorno: Ambiente, consola: Consola): void {
         if (entorno.anterior == null) {
-            entorno.guardarFuncion(this.tipo, this.id, this.params, this.bloqueI)
+            entorno.guardarFuncion(this.tipo, this.id, this.params, this.bloqueI,this.linea,this.columna);
         }
 
     }
