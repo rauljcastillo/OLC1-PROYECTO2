@@ -30,7 +30,8 @@ export class IF extends Instruccion{
 
         }else{
             if(this.elsf!=null){
-                this.elsf.ejecutar(entorno,consola);
+                a=this.elsf.ejecutar(entorno,consola);
+                if(a!=null) return a;
             }
         }
 

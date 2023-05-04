@@ -6,14 +6,25 @@ import { tabla } from './Simbolos/Grafico';
 import { Declaracion } from './instrucciones/Declaracion';
 import { Funciones } from './instrucciones/Funciones';
 import { Main } from './instrucciones/Main';
+import { DeclaArray } from './instrucciones/DeclaArr';
+import {Lista} from './instrucciones/DeclarList'
+import { Asignacion } from './instrucciones/Asignacion';
+import { AsignarA } from './instrucciones/AsignArr';
+import { AsignLista } from './instrucciones/AsignList';
 
 const app = express();
 app.use(cors());
 app.use(express.json());
+let temp={
+  Declaracion,
+  DeclaArray,
+  Lista,
+  Asignacion,
+  AsignarA,
+  AsignLista,
+  Funciones
+}
 
-app.get('/', (req, res) => {
-  res.send('¡Hola, mundo!');
-});
 
 app.listen(4000, () => {
   console.log('Servidor iniciado en el puerto 4000');
@@ -33,7 +44,8 @@ app.post("/texto", (req, res) => {
 
   try {
     for (let inst of resultado.gram) {
-      if(inst instanceof Declaracion || inst instanceof Funciones){
+      if(inst instanceof Declaracion || inst instanceof DeclaArray || inst instanceof Lista || inst instanceof Asignacion || inst instanceof AsignarA
+        || inst instanceof AsignLista || inst instanceof Funciones) {
         inst.ejecutar(global,consola)
       }
     }

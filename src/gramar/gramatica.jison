@@ -14,7 +14,7 @@
 //Expresiones a ignorar
 [ \r\t]+                //Espacios en blanco
 "//"[^\n]*              //Comentarios de linea
-"/*"[^\/]*"*/"         //Comentarios multilinea
+\/\*[\s\S]*?\*\/         //Comentarios multilinea
 \s+                     //espacios en blancos
 \n                      //salto de linea
 
@@ -247,31 +247,8 @@ instruccion:
     | AsignList {$$={gram: $1.gram,nodo: new NODO("Instruccion")};
         $$.nodo.hijos.push($1.nodo);
     }
-    | LENG
-    | TOLOW
-    | TOUPP
-    | TRUNC
-    | ROUN
-    | TYPE
 ;
 
-LENG: len '(' Expresion ')' ';'   {$$=new Especiales("1",$3,@1.first_line,@1.first_column);}
-;
-
-TOLOW: tLow '(' Expresion ')' ';' {$$=new Especiales("2",$3,@1.first_line,@1.first_column);}
-;
-
-TOUPP: tUpp '(' Expresion ')' ';' {$$=new Especiales("3",$3,@1.first_line,@1.first_column);}
-;
-
-TRUNC: trun '(' Expresion ')' ';' {$$=new Especiales("4",$3,@1.first_line,@1.first_column);}
-;
-
-ROUN: round '(' Expresion ')' ';' {$$=new Especiales("5",$3,@1.first_line,@1.first_column);}
-;
-
-TYPE: typ '(' Expresion ')' ';'   {$$=new Especiales("6",$3,@1.first_line,@1.first_column);}
-;
 
 RETORNO: RETN Expresion ';'  {$$={gram: new BREAK("3",$2.gram,@1.first_line,@1.first_column), nodo: new NODO("RETORNO")};
     $$.nodo.hijos.push(new NODO($1));
@@ -434,14 +411,14 @@ asignacion: ID '=' Expresion ';'       {$$= {gram:new Asignacion($1.toLowerCase(
     }
 ;
 
-decArray: TIPO '[' ']' ID '=' NEW TIPO '[' Expresion ']' ';'  {$$={gram:new DeclaArray($1.gram,$4,$7.gram,$9.gram,@1.first_line,@1.first_column),nodo: new NODO("Declarar_Arr")};
+decArray: TIPO '[' ']' ID '=' NEW TIPO '[' Expresion ']' ';'  {$$={gram:new DeclaArray($1.gram,$4.toLowerCase(),$7.gram,$9.gram,@1.first_line,@1.first_column),nodo: new NODO("Declarar_Arr")};
     $$.nodo.hijos.push($1.nodo);
     $$.nodo.hijos.push(new NODO($4));
     $$.nodo.hijos.push(new NODO($8));
     $$.nodo.hijos.push($9.nodo);
     $$.nodo.hijos.push(new NODO($10.nodo));
 }
-    | TIPO '[' ']' ID '=' '{' Lista_Valores '}' ';'                 {$$={gram: new DeclaArray($1.gram,$4,null,$7.gram,@1.first_line,@1.first_column),nodo: new NODO("Declarar_Arr")};
+    | TIPO '[' ']' ID '=' '{' Lista_Valores '}' ';'                 {$$={gram: new DeclaArray($1.gram,$4.toLowerCase(),null,$7.gram,@1.first_line,@1.first_column),nodo: new NODO("Declarar_Arr")};
         $$.nodo.hijos.push($1.nodo);
         $$.nodo.hijos.push(new NODO($4));
         $$.nodo.hijos.push(new NODO($6));
@@ -456,7 +433,7 @@ Lista_Valores: Lista_Valores ',' Expresion      {$1.gram.push($3.gram); $1.nodo.
     }
 ;
 
-asignarArr: ID '[' Expresion ']' '=' Expresion ';'            {$$={gram:new AsignarA($1,$3.gram,$6.gram,@1.first_line,@1.first_column),nodo: new NODO("Asignar_Arr")};
+asignarArr: ID '[' Expresion ']' '=' Expresion ';'            {$$={gram:new AsignarA($1.toLowerCase(),$3.gram,$6.gram,@1.first_line,@1.first_column),nodo: new NODO("Asignar_Arr")};
     $$.nodo.hijos.push(new NODO($1));
     $$.nodo.hijos.push($3.nodo);
     $$.nodo.hijos.push($6.nodo);
@@ -536,8 +513,9 @@ Llamada: ID '(' ')' ';'           {$$={gram: new Llamada($1.toLowerCase(),null,@
     }
 ;
 
-ARG: ARG ',' Expresion                  {$1.gram.push($3.gram);$1.nodo.hijos.push($3.nodo)
-        ;$$={gram: $1.gram, nodo: $1.nodo};
+ARG: ARG ',' Expresion                  {$1.gram.push($3.gram);
+        $1.nodo.hijos.push($3.nodo);
+        $$={gram: $1.gram, nodo: $1.nodo};
     }
     | Expresion                         {$$={gram: [$1.gram], nodo: new NODO("PARAMS")};
         $$.nodo.hijos.push($1.nodo)
@@ -545,21 +523,21 @@ ARG: ARG ',' Expresion                  {$1.gram.push($3.gram);$1.nodo.hijos.pus
 ;
 
 
-Listas: LIST '<' TIPO '>' ID '=' NEW LIST '<' TIPO '>' ';'     {$$={gram: new Lista($3.gram,$5,$10.gram,@1.first_line,@1.first_column), nodo:new NODO("Lista")};
+Listas: LIST '<' TIPO '>' ID '=' NEW LIST '<' TIPO '>' ';'     {$$={gram: new Lista($3.gram,$5.toLowerCase(),$10.gram,@1.first_line,@1.first_column), nodo:new NODO("Lista")};
     $$.nodo.hijos.push(new NODO($1));
     $$.nodo.hijos.push($3.nodo);
     $$.nodo.hijos.push(new NODO($5));
 }
 ;
 
-AddList: ID '.' ADD '(' Expresion ')' ';'         {$$={gram:new AsignLista($1,null,$5.gram,@1.first_line,@1.first_column),nodo: new NODO("AddList")};
+AddList: ID '.' ADD '(' Expresion ')' ';'         {$$={gram:new AsignLista($1.toLowerCase(),null,$5.gram,@1.first_line,@1.first_column),nodo: new NODO("AddList")};
     $$.nodo.hijos.push(new NODO($1))
     $$.nodo.hijos.push(new NODO($3));
     $$.nodo.hijos.push($5.nodo);
 } 
 ;
 
-AsignList: ID '[[' Expresion ']]' '=' Expresion ';'  {$$={gram: new AsignLista($1,$3.gram,$6.gram,@1.first_line,@1.first_column),nodo: new NODO("Asignar_List")};
+AsignList: ID '[[' Expresion ']]' '=' Expresion ';'  {$$={gram: new AsignLista($1.toLowerCase(),$3.gram,$6.gram,@1.first_line,@1.first_column),nodo: new NODO("Asignar_List")};
     $$.nodo.hijos.push(new NODO($1));
     $$.nodo.hijos.push($3.nodo);
     $$.nodo.hijos.push($6.nodo);
@@ -582,6 +560,10 @@ Expresion:
     | '-' Expresion      %prec UMENOS      {$$={gram: new Aritmeticas(new Literal(0,Tipo.INT,@1.first_line,@1.first_column),"NEG",$2.gram,@1.first_line,@1.first_column), nodo: new NODO("Expresion")};
         $$.nodo.hijos.push(new NODO($1));
         $$.nodo.hijos.push($2.nodo)
+    }
+    | '!' Expresion {$$={gram: new Logicas($2.gram,"!",$2.gram,@1.first_line,@1.first_column),nodo: new NODO("Expresion")};
+        $$.nodo.hijos.push(new NODO("!"));
+        $$.nodo.hijos.push($2.nodo);
     }
     | Expresion '+' Expresion   {$$= {gram: new Aritmeticas($1.gram,"+",$3.gram,@1.first_line,@1.first_column), nodo: new NODO("Expresion")};
     
@@ -671,7 +653,7 @@ Expresion:
         $$.nodo.hijos.push($3.nodo);
         $$.nodo.hijos.push(new NODO("]"));
     }
-    | ID '[[' Expresion ']]'    {$$= {gram:new AccesLista($1,$3.gram,@1.first_line,@1.first_column), nodo:new NODO("Acceso_Lista")};
+    | ID '[[' Expresion ']]'    {$$= {gram:new AccesLista($1.toLowerCase(),$3.gram,@1.first_line,@1.first_column), nodo:new NODO("Acceso_Lista")};
         $$.nodo.hijos.push(new NODO($1));
         $$.nodo.hijos.push(new NODO("[["));
         $$.nodo.hijos.push($3.nodo);
@@ -701,6 +683,11 @@ Expresion:
         $$.nodo.hijos.push(new NODO($1));
         $$.nodo.hijos.push($3.nodo);
     }
+
+    | toStr '(' Expresion ')'  {$$={gram: new Especiales("7",$3.gram,@1.first_line,@1.first_column), nodo: new NODO("Especiales")};
+        $$.nodo.hijos.push(new NODO($1));
+        $$.nodo.hijos.push($3.nodo);
+    } 
 
     
     | DECIMAL                   {$$={gram:new Literal($1,Tipo.DOUBLE,@1.first_line,@1.first_column),nodo: new NODO("Expresion")}; 

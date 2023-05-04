@@ -36,6 +36,8 @@ export class Logicas extends Expresion{
                 return {valor: izq.valor||der.valor,type: Tipo.BOOLEAN};
             case "!=":
                 return {valor: izq.valor!=der.valor,type: Tipo.BOOLEAN};
+            case "!":
+                return {valor:!der.valor,type: Tipo.BOOLEAN};
             
         }
     }

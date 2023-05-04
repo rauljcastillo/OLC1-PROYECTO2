@@ -16,13 +16,13 @@ export class Llamada extends Instruccion {
             throw new Error(`La funcion ${this.id} no existe`);
         }
         
-        let paramts=funcion.getParams();
+        let paramts=funcion.getParams();   //Obtiene los parametrso de la funcion 
         let temp: any;
         if(this.params!=null){
             let nuevo=new Ambiente(entorno);
             for(let i=0;i<this.params.length;i++){
-                let val=this.params[i].ejecutar(nuevo)
-                temp=paramts[i].getVariable();
+                let val=this.params[i].ejecutar(entorno)      //Obtiene y ejecuta el argumento que se pasa
+                temp=paramts[i].getVariable();              //Obtiene el nombre y valor del parametro
                 nuevo.guardar(temp.tipo,temp.id,val.valor,temp.linea,temp.columna);
 
             }

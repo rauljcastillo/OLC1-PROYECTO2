@@ -35,6 +35,8 @@ export class Especiales extends Instruccion {
                 }
             case "6":  //Typeof
                 return {valor: `${Tipo[a.type]}`, type: Tipo.STRING}
+            case "7":   //toString
+                return {valor: a.valor.toString(),type: Tipo.STRING}
         }
     }
 }
