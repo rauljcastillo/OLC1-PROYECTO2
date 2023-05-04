@@ -9,10 +9,7 @@ export class Print extends Instruccion {
     public columna:number;
     constructor(valor:Expresion,linea:number,columna:number){
         super(linea,columna);
-        this.valor=valor;
-        this.linea=linea;
-        this.columna=columna;
-        
+        this.valor=valor; 
     }
 
     public ejecutar(entorno:Ambiente,consola:Consola) {

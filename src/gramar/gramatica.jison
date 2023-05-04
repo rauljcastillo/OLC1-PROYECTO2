@@ -6,7 +6,7 @@
 %lex
 
 %options case-insensitive
-
+%x string
      
 
 
@@ -97,11 +97,21 @@
 
 
 //Expresiones regulares
-([0-9]+\.[0-9]+)              {return "DECIMAL";}
-(\b[a-zA-Z_]\w*\b)          {return "ID";}
+["]                         {cadena = ''; this.begin("string");}
+<string>[^"\\]+             {cadena+= yytext;}
+<string>"\\\""              {cadena+="\"";}
+<string>"\\n"               {cadena+="\n"}
+<string>\s                  {cadena+=" ";}
+<string>"\\t"               {cadena+="\t";}
+<string>"\\\\"              {cadena+="\\";}
+<string>"\\r"               {cadena+="\r";}
+<string>[\\\']+              {cadena+="\'";}
+<string>["]                 {yytext=cadena;this.popState(); return 'CADENA';}
+
+([0-9]+\.[0-9]+)                {return "DECIMAL";}
+(\b[a-zA-Z_]\w*\b)              {return "ID";}
 ([0-9]+)                        {return "ENTERO";}
-\"[^\"]*\"                      {return "CADENA";}
-\'[^\']\'                      {return "CHAR";}
+\'[^\']\'                       {return "CHAR";}
 <<EOF>>                         return "EOF"
 
 . {
@@ -140,6 +150,7 @@
     const {TERNARIO}=require("../instrucciones/Ternario");
     const {Especiales}=require("../instrucciones/FuncEspec");
     const {Main}=require("../instrucciones/Main");
+    const {NODO}= require("../Simbolos/AST");
 %}
 
 %left '?' ':'
@@ -160,34 +171,82 @@
 %ebnf
 %%
 
-INICIO: instrucciones EOF {return $1;}
+INICIO: instrucciones EOF {$$={gram: $1.gram, nodo: new NODO("INICIO")};
+    $$.nodo.hijos.push($1.nodo);
+    $$.nodo.hijos.push(new NODO("EOF"));
+    return $$
+}
 ;
 
 instrucciones: 
-    instrucciones instruccion   {$1.push($2); $$=$1;}
-    | instruccion               {$$=[$1];}
+    instrucciones instruccion   {$1.gram.push($2.gram);
+    $1.nodo.hijos.push($2.nodo); 
+    $$={gram: $1.gram,nodo: $1.nodo};
+    }
+    | instruccion               {$$={gram: [$1.gram] ,nodo:new NODO("Instrucciones")};
+        $$.nodo.hijos.push($1.nodo);
+    }
 ;
 
 instruccion: 
-    iIF
-    | iwhile        {$$=$1;}
-    | asignacion    {$$=$1;}
-    | declaracion   {$$=$1;}
-    | fPRINT        {$$=$1;}
-    | ifor          {$$=$1;}
-    | switch        {$$=$1;}
-    | BREAK ';'     {$$=new BREAK("1",@1.first_line,@1.first_column);}
-    | CONTIN ';'    {$$=new BREAK("2",@1.first_line,@1.first_column);}
-    | dowhile       {$$=$1;}
-    | decArray      {$$=$1;}
-    | asignarArr    {$$=$1;}
-    | FUNCION       {$$=$1;}
-    | Llamada       {$$=$1;}
-    | RETORNO       {$$=$1;}
-    | Listas        {$$=$1;}
-    | AsignList     {$$=$1;}
-    | MAIN Llamada  {$$=new Main($2,@1.first_line,@1.first_column);}
-    | NewAsignacion {$$=$1;}
+    iIF             {$$={gram: $1.gram,nodo: new NODO("Instruccion")};
+        $$.nodo.hijos.push($1.nodo);
+    }
+    | iwhile        {$$={gram:$1.gram,nodo: new NODO("Instruccion")};
+        $$.nodo.hijos.push($1.nodo);
+    }
+    | asignacion    {$$={gram: $1.gram,nodo: new NODO("Instruccion")};
+        $$.nodo.hijos.push($1.nodo);
+    }
+    | declaracion   {$$={gram: $1.gram,nodo: new NODO("Instruccion")};
+        $$.nodo.hijos.push($1.nodo);
+    }
+    | fPRINT        {$$={gram: $1.gram,nodo: new NODO("Instruccion")};
+        $$.nodo.hijos.push($1.nodo);
+    }
+    | ifor          {$$={gram:$1.gram,nodo:new NODO("Instruccion")};
+        $$.nodo.hijos.push($1.nodo);
+    }
+    | switch        {$$={gram: $1.gram,nodo: new NODO("Instruccion")};
+        $$.nodo.hijos.push($1.nodo);
+    }
+    | BREAK ';'     {$$={gram: new BREAK("1",@1.first_line,@1.first_column),nodo: new NODO("Instruccion")};
+        $$.nodo.hijos.push(new NODO($1));
+    }
+    | CONTIN ';'    {$$={gram: new BREAK("2",@1.first_line,@1.first_column),nodo: new NODO("Instruccion")};
+        $$.nodo.hijos.push(new NODO($1));
+    }
+    | dowhile       {$$={gram: $1.gram,nodo: new NODO("Instruccion")};
+        $$.nodo.hijos.push($1.nodo);
+    }
+    | decArray      {$$={gram: $1.gram,nodo: new NODO("Instruccion")};
+        $$.nodo.hijos.push($1.nodo);
+    }
+    | asignarArr    {$$={gram: $1.gram,nodo: new NODO("Instruccion")};
+        $$.nodo.hijos.push($1.nodo);
+    }
+    | FUNCION       {$$={gram: $1.gram,nodo: new NODO("Instruccion")};
+        $$.nodo.hijos.push($1.nodo);
+    }
+    | Llamada       {$$={gram: $1.gram,nodo: new NODO("Instruccion")};
+        $$.nodo.hijos.push($1.nodo);
+    }
+    | RETORNO       {$$={gram: $1.gram,nodo: new NODO("Instruccion")};
+        $$.nodo.hijos.push($1.nodo);
+    }
+    | Listas        {$$={gram: $1.gram,nodo: new NODO("Instruccion")};
+        $$.nodo.hijos.push($1.nodo);
+    }
+    | AddList     {$$={gram: $1.gram,nodo: new NODO("Instruccion")};
+        $$.nodo.hijos.push($1.nodo);
+    }
+    | MAIN Llamada  {$$={gram: new Main($2.gram,@1.first_line,@1.first_column), nodo:new NODO("Instruccion")};
+        $$.nodo.hijos.push(new NODO($1));
+        $$.nodo.hijos.push($2.nodo);
+    }
+    | AsignList {$$={gram: $1.gram,nodo: new NODO("Instruccion")};
+        $$.nodo.hijos.push($1.nodo);
+    }
     | LENG
     | TOLOW
     | TOUPP
@@ -214,163 +273,481 @@ ROUN: round '(' Expresion ')' ';' {$$=new Especiales("5",$3,@1.first_line,@1.fir
 TYPE: typ '(' Expresion ')' ';'   {$$=new Especiales("6",$3,@1.first_line,@1.first_column);}
 ;
 
-RETORNO: RETN Expresion ';'  {$$=new BREAK("3",$2,@1.first_line,@1.first_column);}
+RETORNO: RETN Expresion ';'  {$$={gram: new BREAK("3",$2.gram,@1.first_line,@1.first_column), nodo: new NODO("RETORNO")};
+    $$.nodo.hijos.push(new NODO($1));
+    $$.nodo.hijos.push($2.nodo);
+}
 ;
 
 BSENTENCIAS: 
-    '{' instrucciones '}'   {$$=new Instrucciones($2,@1.first_line,@1.first_column);}
+    '{' instrucciones '}'   {$$={gram: new Instrucciones($2.gram,@1.first_line,@1.first_column), nodo: $2.nodo};}
     | '{' '}'
 ;
 
 iIF:  
-    IF '(' Expresion ')' BSENTENCIAS            {$$=new IF($3,$5,null,@1.first_line,@1.first_column);}
-    | IF '(' Expresion ')' BSENTENCIAS ELSE     {$$=new IF($3,$5,$6,@1.first_line,@1.first_column);}
+    IF '(' Expresion ')' BSENTENCIAS            {$$={gram: new IF($3.gram,$5.gram,null,@1.first_line,@1.first_column),nodo: new NODO("If")};
+        $$.nodo.hijos.push(new NODO($1));
+        $$.nodo.hijos.push(new NODO($2));
+        $$.nodo.hijos.push($3.nodo);
+        $$.nodo.hijos.push(new NODO($4));
+        $$.nodo.hijos.push($5.nodo);
+    }
+    
+    | IF '(' Expresion ')' BSENTENCIAS ELSE     {$$={gram: new IF($3.gram,$5.gram,$6.gram,@1.first_line,@1.first_column), nodo: new NODO("if")};
+    
+        $$.nodo.hijos.push(new NODO($1));
+        $$.nodo.hijos.push(new NODO($2));
+        $$.nodo.hijos.push($3.nodo);
+        $$.nodo.hijos.push(new NODO($4));
+        $$.nodo.hijos.push($5.nodo);
+        $$.nodo.hijos.push($6.nodo);
+    }
+    
 ;
 
 ELSE: 
-    tELSE iIF           {$$ =$2;}     
-    | tELSE BSENTENCIAS {$$=$2;}
+    tELSE iIF           {$$ ={gram: $2.gram ,nodo: new NODO("Else")};
+        $$.nodo.hijos.push($2.nodo);
+    }     
+    | tELSE BSENTENCIAS {$$ ={gram: $2.gram ,nodo: new NODO("Else")};
+        $$.nodo.hijos.push($2.nodo);
+    }
 ;
 
-switch: SWITCH '(' Expresion ')' '{' BLOQSWITCH fDEFAULT '}' {$$= new SWITCH($3,$6,$7,@1.first_line,@1.first_column);}
+switch: SWITCH '(' Expresion ')' '{' BLOQSWITCH fDEFAULT '}' {$$= {gram:new SWITCH($3.gram,$6.gram,$7.gram,@1.first_line,@1.first_column),nodo: new NODO("Switch")};
+    $$.nodo.hijos.push(new NODO($1));
+    $$.nodo.hijos.push(new NODO($2));
+    $$.nodo.hijos.push($3.nodo);
+    $$.nodo.hijos.push(new NODO($4));
+    $$.nodo.hijos.push($6.nodo);
+    $$.nodo.hijos.push($7.nodo)
+}
 ;
 
-BLOQSWITCH: BLOQSWITCH fcase                {$1.push($2); $$=$1;}
-    | fcase                                 {$$=[$1];}
+BLOQSWITCH: BLOQSWITCH fcase                {$1.gram.push($2.gram); $1.nodo.hijos.push($2.nodo);
+
+    $$={gram: $1.gram,nodo: $1.nodo};
+}
+    | fcase                                 {$$={gram: [$1.gram], nodo: new NODO("Bloq_Case")};
+        $$.nodo.hijos.push($1.nodo);
+    }
 ;
 
-fcase: CASE Expresion ':' instrucciones     {$$=new CASE($2,$4);}
+fcase: CASE Expresion ':' instrucciones     {$$={gram:new CASE($2.gram,$4.gram),nodo:new NODO("Case")};
+    $$.nodo.hijos.push(new NODO($1));
+    $$.nodo.hijos.push($2.nodo);
+    $$.nodo.hijos.push(new NODO($3));
+    $$.nodo.hijos.push($4.nodo);
+}
 ;
 
-fDEFAULT: DEFAULT ':' instrucciones                  {$$= $3;}
-    | 
+fDEFAULT: DEFAULT ':' instrucciones                  {$$= {gram: $3.gram,nodo:new NODO("Default")};
+        $$.nodo.hijos.push(new NODO($1));
+        $$.nodo.hijos.push(new NODO($2));
+        $$.nodo.hijos.push($3.nodo);
+    }
+    |   {$$={gram: "", nodo: new NODO("Default")};}
 ;
 
 
-iwhile: WHILE '(' Expresion ')' BSENTENCIAS  {$$=new While($3,$5,@1.first_line,@1.first_column);}
+iwhile: WHILE '(' Expresion ')' BSENTENCIAS  {$$={gram:new While($3.gram,$5.gram,@1.first_line,@1.first_column),nodo: new NODO("While")};
+    $$.nodo.hijos.push(new NODO($1));
+    $$.nodo.hijos.push(new NODO($2));
+    $$.nodo.hijos.push($3.nodo);
+    $$.nodo.hijos.push(new NODO($4));
+    $$.nodo.hijos.push($5.nodo);
+}
 ;
 
 ifor: 
-    FOR '(' AssignFor ';' Expresion ';' Actualiz ')' BSENTENCIAS {$$=new FOR($3,$5,$7,$9,@1.first_line,@1.first_column);} 
+    FOR '(' AssignFor ';' Expresion ';' Actualiz ')' BSENTENCIAS {$$={gram: new FOR($3.gram,$5.gram,$7.gram,$9.gram,@1.first_line,@1.first_column), nodo: new NODO("FOR")};
+        $$.nodo.hijos.push(new NODO($1));
+        $$.nodo.hijos.push($3.nodo);
+        $$.nodo.hijos.push($5.nodo);
+        $$.nodo.hijos.push($7.nodo);
+        $$.nodo.hijos.push($9.nodo);
+    } 
 ;
 
 AssignFor: 
-    TIPO ID '=' Expresion               {$$=new Declaracion($1,$2.toLowerCase(),$4,@1.first_line,@1.first_column);}
-    | ID  '=' Expresion                 {$$= new Asignacion($1,$3,@1.first_line,@1.first_column);}
+    TIPO ID '=' Expresion               {$$={gram:new Declaracion($1.gram,$2.toLowerCase(),$4.gram,@1.first_line,@1.first_column), nodo: new NODO("Asignacion")};
+        $$.nodo.hijos.push($1.nodo);
+        $$.nodo.hijos.push(new NODO($2));
+        $$.nodo.hijos.push(new NODO($3));
+        $$.nodo.hijos.push($4.nodo);
+    }
+    | ID  '=' Expresion                 {$$= {gram:new Asignacion($1,$3.gram,@1.first_line,@1.first_column),nodo: new NODO("Asignación")};
+        $$.nodo.hijos.push(new NODO($1));
+        $$.nodo.hijos.push(new NODO($2));
+        $$.nodo.hijos.push($3.nodo);
+    }
 ;
 
 Actualiz: 
-    ID '=' Expresion                   {$$=new Asignacion($1,$3,@1.first_line,@1.first_column);}
-    | ID '++'                          {$$= new Asignacion($1,"+",false,@1.first_line,@1.first_column);}
-    | ID '--'                          {$$= new Asignacion($1,"-",false,@1.first_line,@1.first_column);}
+    ID '=' Expresion                   {$$={gram:new Asignacion($1,$3.gram,@1.first_line,@1.first_column),nodo:new NODO("Actualiz")};
+        $$.nodo.hijos.push(new NODO($1));
+        $$.nodo.hijos.push(new NODO($2));
+        $$.nodo.hijos.push($3.nodo);
+    }
+    | ID '++'                          {$$= {gram:new Asignacion($1,"+",false,@1.first_line,@1.first_column),nodo:new NODO("Actualiz")};
+        $$.nodo.hijos.push(new NODO($1));
+        $$.nodo.hijos.push(new NODO($2));
+    }
+    | ID '--'                          {$$= {gram:new Asignacion($1,"-",false,@1.first_line,@1.first_column),nodo:new NODO("Actualiz")};
+        $$.nodo.hijos.push(new NODO($1));
+        $$.nodo.hijos.push(new NODO($2));
+    }
 ;
 
-dowhile: DO BSENTENCIAS WHILE '(' Expresion ')' ';'  {$$=new DOWHile($2,$5,@1.first_line,@1.first_column);}
+dowhile: DO BSENTENCIAS WHILE '(' Expresion ')' ';'  {$$={gram: new DOWHile($2.gram,$5.gram,@1.first_line,@1.first_column),nodo: new NODO("Do-While")};
+    $$.nodo.hijos.push(new NODO("Do"));
+    $$.nodo.hijos.push($2.nodo);
+    $$.nodo.hijos.push(new NODO("While"));
+    $$.nodo.hijos.push($5.nodo);
+}
 ;
 
-declaracion: TIPO ID '=' Expresion ';' {$$=new Declaracion($1,$2.toLowerCase(),$4,@1.first_line,@1.first_column);}
-    | TIPO ID ';'                      {$$=new Declaracion($1,$2.toLowerCase(),null,@1.first_line,@1.first_column);}
+declaracion: TIPO ID '=' Expresion ';' {$$={gram:new Declaracion($1.gram,$2.toLowerCase(),$4.gram,@1.first_line,@1.first_column),nodo: new NODO("Declaracion")};
+    $$.nodo.hijos.push($1.nodo);
+    $$.nodo.hijos.push(new NODO($2));
+    $$.nodo.hijos.push(new NODO($3));
+    $$.nodo.hijos.push($4.nodo);
+}
+    | TIPO ID ';'                      {$$={gram: new Declaracion($1.gram,$2.toLowerCase(),null,@1.first_line,@1.first_column),nodo:new NODO("Declaracion")};
+        $$.nodo.hijos.push($1.nodo);
+        $$.nodo.hijos.push(new NODO($2));
+    }
 ;
 
-asignacion: ID '=' Expresion ';'       {$$= new Asignacion($1.toLowerCase(),$3,@1.first_line,@1.first_column);}
-    | ID '++' ';'                      {$$= new Asignacion($1.toLowerCase(),"+",false,@1.first_line,@1.first_column);}
-    | ID '--' ';'                      {$$= new Asignacion($1.toLowerCase(),"-",false,@1.first_line,@1.first_column);}
+asignacion: ID '=' Expresion ';'       {$$= {gram:new Asignacion($1.toLowerCase(),$3.gram,@1.first_line,@1.first_column),nodo: new NODO("Asignacion")};
+    $$.nodo.hijos.push(new NODO($1));
+    $$.nodo.hijos.push(new NODO($2));
+    $$.nodo.hijos.push($3.nodo);
+}
+    | ID '++' ';'                      {$$= {gram:new Asignacion($1.toLowerCase(),"+",false,@1.first_line,@1.first_column),nodo:new NODO("Asignacion")};
+        $$.nodo.hijos.push(new NODO($1));
+        $$.nodo.hijos.push(new NODO($2));
+    }
+    | ID '--' ';'                      {$$= {gram:new Asignacion($1.toLowerCase(),"-",false,@1.first_line,@1.first_column),nodo: new NODO("Asignacion")};
+        $$.nodo.hijos.push(new NODO($1));
+        $$.nodo.hijos.push(new NODO($2));
+    }
 ;
 
-decArray: TIPO '[' ']' ID '=' NEW TIPO '[' Expresion ']' ';'  {$$=new DeclaArray($1,$4,$7,$9,@1.first_line,@1.first_column);}
-    | TIPO '[' ']' ID '=' '{' VALORES '}' ';'                 {$$=new DeclaArray($1,$4,null,$7,@1.first_line,@1.first_column);}
+decArray: TIPO '[' ']' ID '=' NEW TIPO '[' Expresion ']' ';'  {$$={gram:new DeclaArray($1.gram,$4,$7.gram,$9.gram,@1.first_line,@1.first_column),nodo: new NODO("Declarar_Arr")};
+    $$.nodo.hijos.push($1.nodo);
+    $$.nodo.hijos.push(new NODO($4));
+    $$.nodo.hijos.push(new NODO($8));
+    $$.nodo.hijos.push($9.nodo);
+    $$.nodo.hijos.push(new NODO($10.nodo));
+}
+    | TIPO '[' ']' ID '=' '{' Lista_Valores '}' ';'                 {$$={gram: new DeclaArray($1.gram,$4,null,$7.gram,@1.first_line,@1.first_column),nodo: new NODO("Declarar_Arr")};
+        $$.nodo.hijos.push($1.nodo);
+        $$.nodo.hijos.push(new NODO($4));
+        $$.nodo.hijos.push(new NODO($6));
+    }
 ;
 
-VALORES: VALORES ',' Expresion      {$1.push($3); $$=$1;}
-    | Expresion                     {$$=[$1];}
+Lista_Valores: Lista_Valores ',' Expresion      {$1.gram.push($3.gram); $1.nodo.hijos.push($3.nodo);
+    $$={gram: $1.gram,nodo:$1.nodo};
+}
+    | Expresion                     {$$={gram:[$1.gram], nodo: new NODO("Lista_valores")};
+        $$.nodo.hijos.push($1.nodo);
+    }
 ;
 
-asignarArr: ID '[' Expresion ']' '=' Expresion ';'            {$$=new AsignarA($1,$3,$6,@1.first_line,@1.first_column);}
+asignarArr: ID '[' Expresion ']' '=' Expresion ';'            {$$={gram:new AsignarA($1,$3.gram,$6.gram,@1.first_line,@1.first_column),nodo: new NODO("Asignar_Arr")};
+    $$.nodo.hijos.push(new NODO($1));
+    $$.nodo.hijos.push($3.nodo);
+    $$.nodo.hijos.push($6.nodo);
+}
 ;
 
 TIPO: 
-    DOUBLE    {$$=Tipo.DOUBLE;}
-    | INT       {$$=Tipo.INT;}
-    | STRING    {$$=Tipo.STRING;}
-    | CHAR      {$$=Tipo.CHAR;}
-    | BOOLEAN   {$$=Tipo.BOOLEAN;}
-    | VOID      {$$=Tipo.VOID;}
+    DOUBLE    {$$={gram: Tipo.DOUBLE,nodo: new NODO("Tipo")};
+        $$.nodo.hijos.push(new NODO(`${Tipo[Tipo.DOUBLE]}`));
+    }
+    | INT       {$$={gram: Tipo.INT,nodo: new NODO("Tipo")};
+        $$.nodo.hijos.push(new NODO(`${Tipo[Tipo.INT]}`));
+    }
+    | STRING    {$$={gram: Tipo.STRING,nodo: new NODO("Tipo")};
+        $$.nodo.hijos.push(new NODO(`${Tipo[Tipo.STRING]}`));
+    }
+    | CHAR      {$$={gram: Tipo.CHAR, nodo: new NODO("Tipo")};
+        $$.nodo.hijos.push(new NODO(`${Tipo[Tipo.CHAR]}`));
+    }
+    | BOOLEAN   {$$={gram: Tipo.BOOLEAN, nodo: new NODO("Tipo")};
+        $$.nodo.hijos.push(new NODO(`${Tipo[Tipo.BOOLEAN]}`));
+    }
+    | VOID      {$$={gram: Tipo.VOID, nodo: new NODO("Tipo")};
+        $$.nodo.hijos.push(new NODO(`${Tipo[Tipo.VOID]}`));
+    }
 ;
 
-fPRINT: PRINT '(' Expresion ')' ';' {$$= new Print($3,@1.first_line,@1.first_column);}
-;
-
-
-FUNCION: TIPO ID '(' ')' BSENTENCIAS        {$$=new Funciones($1,$2.toLowerCase(),null,$5,@1.first_line,@1.first_column);}
-    | TIPO ID '(' PARAMS ')' BSENTENCIAS    {$$=new Funciones($1,$2.toLowerCase(),$4,$6,@1.first_line,@1.first_column);}
-;
-
-PARAMS: PARAMS ',' PARAM                {$1.push($3); $$=$1;}
-    | PARAM                               {$$=[$1];}
-;
-
-PARAM: TIPO ID                              {$$=new Params($1,$2);}
-;
-
-Llamada: ID '(' ')' ';'                     {$$=new Llamada($1.toLowerCase(),null,@1.first_line,@1.first_column);}
-    | ID '(' ARG ')' ';'                    {$$=new Llamada($1.toLowerCase(),$3,@1.first_line,@1.first_column);}
-;
-
-ARG: ARG ',' Expresion                  {$1.push($3);$$=$1;}
-    | Expresion                         {$$=[$1];}
+fPRINT: PRINT '(' Expresion ')' ';' {$$= {gram: new Print($3.gram,@1.first_line,@1.first_column),nodo: new NODO("PRINT")};
+    $$.nodo.hijos.push($3.nodo);
+}
 ;
 
 
-Listas: LIST '<' TIPO '>' ID '=' NEW LIST '<' TIPO '>' ';'     {$$=new Lista($3,$5,$10,@1.first_line,@1.first_column);}
+FUNCION: TIPO ID '(' ')' BSENTENCIAS        {$$={gram: new Funciones($1.gram,$2.toLowerCase(),null,$5.gram,@1.first_line,@1.first_column),nodo: new NODO("FUNCION")};
+    $$.nodo.hijos.push($1.nodo);
+    $$.nodo.hijos.push(new NODO($2));
+    $$.nodo.hijos.push(new NODO($3));
+    $$.nodo.hijos.push(new NODO($4));
+    $$.nodo.hijos.push($5.nodo);
+
+}
+    | TIPO ID '(' PARAMS ')' BSENTENCIAS    {$$={gram: new Funciones($1.gram,$2.toLowerCase(),$4.gram,$6.gram,@1.first_line,@1.first_column),nodo: new NODO("FUNCION")};
+    $$.nodo.hijos.push($1.nodo);
+    $$.nodo.hijos.push(new NODO($2));
+    $$.nodo.hijos.push(new NODO($3));
+    $$.nodo.hijos.push($4.nodo);
+    $$.nodo.hijos.push(new NODO($5));
+    $$.nodo.hijos.push($6.nodo);
+    
+}
 ;
 
-AsignList: ID '.' ADD '(' Expresion ')' ';'         {$$=new AsignLista($1,null,$5,@1.first_line,@1.first_column);} 
+PARAMS: PARAMS ',' PARAM                {$1.gram.push($3.gram); $1.nodo.hijos.push($3.nodo);
+        $$={gram: $1.gram,nodo: $1.nodo};
+    }
+    | PARAM                               {$$={gram: [$1.gram], nodo: new NODO("PARAMS")};
+        $$.nodo.hijos.push($1.nodo)
+    }
 ;
 
-NewAsignacion: ID '[[' Expresion ']]' '=' Expresion ';'  {$$=new AsignLista($1,$3,$6,@1.first_line,@1.first_column);}
+PARAM: TIPO ID                              {$$={gram: new Params($1.gram,$2,@1.first_line,@1.first_column), nodo: new NODO("PARAM")};
+    $$.nodo.hijos.push($1.nodo);
+    $$.nodo.hijos.push(new NODO($2));
+}
+;
+
+Llamada: ID '(' ')' ';'           {$$={gram: new Llamada($1.toLowerCase(),null,@1.first_line,@1.first_column),nodo: new NODO("Llamada")};
+    $$.nodo.hijos.push(new NODO($1));
+    $$.nodo.hijos.push(new NODO($2));
+    $$.nodo.hijos.push(new NODO($3));
+}
+    | ID '(' ARG ')' ';'                    {$$={gram: new Llamada($1.toLowerCase(),$3.gram,@1.first_line,@1.first_column),nodo: new NODO("Llamada")};
+        $$.nodo.hijos.push(new NODO($1));
+        $$.nodo.hijos.push(new NODO($2));
+        $$.nodo.hijos.push($3.nodo);
+        $$.nodo.hijos.push(new NODO($4));
+    }
+;
+
+ARG: ARG ',' Expresion                  {$1.gram.push($3.gram);$1.nodo.hijos.push($3.nodo)
+        ;$$={gram: $1.gram, nodo: $1.nodo};
+    }
+    | Expresion                         {$$={gram: [$1.gram], nodo: new NODO("PARAMS")};
+        $$.nodo.hijos.push($1.nodo)
+    }
+;
+
+
+Listas: LIST '<' TIPO '>' ID '=' NEW LIST '<' TIPO '>' ';'     {$$={gram: new Lista($3.gram,$5,$10.gram,@1.first_line,@1.first_column), nodo:new NODO("Lista")};
+    $$.nodo.hijos.push(new NODO($1));
+    $$.nodo.hijos.push($3.nodo);
+    $$.nodo.hijos.push(new NODO($5));
+}
+;
+
+AddList: ID '.' ADD '(' Expresion ')' ';'         {$$={gram:new AsignLista($1,null,$5.gram,@1.first_line,@1.first_column),nodo: new NODO("AddList")};
+    $$.nodo.hijos.push(new NODO($1))
+    $$.nodo.hijos.push(new NODO($3));
+    $$.nodo.hijos.push($5.nodo);
+} 
+;
+
+AsignList: ID '[[' Expresion ']]' '=' Expresion ';'  {$$={gram: new AsignLista($1,$3.gram,$6.gram,@1.first_line,@1.first_column),nodo: new NODO("Asignar_List")};
+    $$.nodo.hijos.push(new NODO($1));
+    $$.nodo.hijos.push($3.nodo);
+    $$.nodo.hijos.push($6.nodo);
+}
 ;
 
 
 Expresion: 
-    '(' Expresion ')'                          {$$=$2;}
+    '(' Expresion ')'                         {$$={gram: $2.gram ,nodo: new NODO("Expresion")};
+        $$.nodo.hijos.push(new NODO("("));
+        $$.nodo.hijos.push($2.nodo);
+        $$.nodo.hijos.push(new NODO(")"));
+    } 
     //| '(' TIPO ')' Expresion 
-    | Expresion '*' Expresion                  {$$= new Aritmeticas($1,"*",$3,@1.first_line,@1.first_column);}
-    | '-' Expresion      %prec UMENOS        {$$=new Aritmeticas(new Literal(0,Tipo.INT,@1.first_line,@1.first_column),"NEG",$2,@1.first_line,@1.first_column);}
-    | Expresion '+' Expresion   {$$= new Aritmeticas($1,"+",$3,@1.first_line,@1.first_column);}
-    | Expresion '-' Expresion   {$$= new Aritmeticas($1,"-",$3,@1.first_line,@1.first_column);}
-    | Expresion '/' Expresion   {$$= new Aritmeticas($1,"/",$3,@1.first_line,@1.first_column);}
-    | Expresion '%' Expresion   {$$= new Aritmeticas($1,"%",$3,@1.first_line,@1.first_column);}
-    | Expresion '^' Expresion   {$$= new Aritmeticas($1,"^",$3,@1.first_line,@1.first_column);}
-    | Expresion '==' Expresion  {$$= new Logicas($1,$2,$3,@1.first_line,@1.first_column);}
-    | Expresion '!=' Expresion  {$$= new Logicas($1,$2,$3,@1.first_line,@1.first_column);}
-    | Expresion '<=' Expresion  {$$= new Logicas($1,$2,$3,@1.first_line,@1.first_column);}
-    | Expresion '>=' Expresion  {$$= new Logicas($1,$2,$3,@1.first_line,@1.first_column);}
-    | Expresion '<' Expresion   {$$= new Logicas($1,$2,$3,@1.first_line,@1.first_column);} 
-    | Expresion '>' Expresion   {$$= new Logicas($1,$2,$3,@1.first_line,@1.first_column);}
-    | Expresion '||' Expresion  {$$= new Logicas($1,$2,$3,@1.first_line,@1.first_column);}
-    | Expresion '&&' Expresion  {$$= new Logicas($1,$2,$3,@1.first_line,@1.first_column);}
-    | Expresion '?' Expresion ':' Expresion {$$=new TERNARIO($1,$3,$5,@1.first_line,@1.first_column);}
-    | ID '[' Expresion ']'      {$$= new AccesoArr($1.toLowerCase(),$3,@1.first_line,@1.first_column);}
-    | ID '[[' Expresion ']]'    {$$= new AccesLista($1,$3,@1.first_line,@1.first_column);} 
-    | len '(' Expresion ')'     {$$=new Especiales("1",$3,@1.first_line,@1.first_column);}
-    | tLow '(' Expresion ')'    {$$=new Especiales("2",$3,@1.first_line,@1.first_column);}
-    | tUpp '(' Expresion ')'    {$$=new Especiales("3",$3,@1.first_line,@1.first_column);}
-    | trun '(' Expresion ')'    {$$=new Especiales("4",$3,@1.first_line,@1.first_column);}
-    | round '(' Expresion ')'   {$$=new Especiales("5",$3,@1.first_line,@1.first_column);}
-    | typ '(' Expresion ')'     {$$=new Especiales("6",$3,@1.first_line,@1.first_column);}
-    | F
-;
+    | Expresion '*' Expresion              {$$= {gram: new Aritmeticas($1.gram,"*",$3.gram,@1.first_line,@1.first_column),nodo: new NODO("Expresion")};
+        $$.nodo.hijos.push($1.nodo)
+        $$.nodo.hijos.push(new NODO($2))
+        $$.nodo.hijos.push($3.nodo)
+    }
+    | '-' Expresion      %prec UMENOS      {$$={gram: new Aritmeticas(new Literal(0,Tipo.INT,@1.first_line,@1.first_column),"NEG",$2.gram,@1.first_line,@1.first_column), nodo: new NODO("Expresion")};
+        $$.nodo.hijos.push(new NODO($1));
+        $$.nodo.hijos.push($2.nodo)
+    }
+    | Expresion '+' Expresion   {$$= {gram: new Aritmeticas($1.gram,"+",$3.gram,@1.first_line,@1.first_column), nodo: new NODO("Expresion")};
+    
+        $$.nodo.hijos.push($1.nodo);
+        $$.nodo.hijos.push(new NODO($2));
+        $$.nodo.hijos.push($3.nodo);
+    }
+    | Expresion '-' Expresion   {$$= {gram: new Aritmeticas($1.gram,"-",$3.gram,@1.first_line,@1.first_column),nodo: new NODO("Expresion")};
+        $$.nodo.hijos.push($1.nodo);
+        $$.nodo.hijos.push(new NODO($2));
+        $$.nodo.hijos.push($3.nodo);
+    }
+    | Expresion '/' Expresion   {$$= {gram: new Aritmeticas($1.gram,"/",$3.gram,@1.first_line,@1.first_column),nodo: new NODO("Expresion")};
+        $$.nodo.hijos.push($1.nodo);
+        $$.nodo.hijos.push(new NODO($2));
+        $$.nodo.hijos.push($3.nodo);
+    }
+    | Expresion '%' Expresion   {$$= {gram: new Aritmeticas($1.gram,"%",$3.gram,@1.first_line,@1.first_column),nodo: new NODO("Expresion")};
+    
+        $$.nodo.hijos.push(new NODO($1.nodo));
+        $$.nodo.hijos.push(new NODO($2));
+        $$.nodo.hijos.push(new NODO($3.nodo));
+    }
+    | Expresion '^' Expresion   {$$= {gram:new Aritmeticas($1.gram,"^",$3.gram,@1.first_line,@1.first_column),nodo: new NODO("Expresion")};
+    
+        $$.nodo.hijos.push(new NODO($1.nodo));
+        $$.nodo.hijos.push(new NODO($2));
+        $$.nodo.hijos.push(new NODO($3.nodo));
+    }
+    | Expresion '==' Expresion  {$$= {gram: new Logicas($1.gram,$2,$3.gram,@1.first_line,@1.first_column), nodo: new NODO("Expresion")};
+    
+        $$.nodo.hijos.push($1.nodo);
+        $$.nodo.hijos.push(new NODO($2));
+        $$.nodo.hijos.push($3.nodo);
+    }
+    | Expresion '!=' Expresion  {$$= {gram: new Logicas($1.gram,$2,$3.gram,@1.first_line,@1.first_column),nodo: new NODO("Expresion")};
+    
+        $$.nodo.hijos.push($1.nodo);
+        $$.nodo.hijos.push(new NODO($2));
+        $$.nodo.hijos.push($3.nodo);
+    }
+    | Expresion '<=' Expresion  {$$= {gram: new Logicas($1.gram,$2,$3.gram,@1.first_line,@1.first_column), nodo: new NODO("Expresion")};
+    
+        $$.nodo.hijos.push($1.nodo);
+        $$.nodo.hijos.push(new NODO($2));
+        $$.nodo.hijos.push($3.nodo);
+    }
+    | Expresion '>=' Expresion  {$$= {gram: new Logicas($1.gram,$2,$3.gram,@1.first_line,@1.first_column),nodo: new  NODO("Expresion")};
+    
+        $$.nodo.hijos.push($1.nodo);
+        $$.nodo.hijos.push(new NODO($2));
+        $$.nodo.hijos.push($3.nodo);
+    }
+    | Expresion '<' Expresion   {$$= {gram: new Logicas($1.gram,$2,$3.gram,@1.first_line,@1.first_column), nodo: new NODO("Expresion")};
+    
+        $$.nodo.hijos.push($1.nodo);
+        $$.nodo.hijos.push(new NODO($2));
+        $$.nodo.hijos.push($3.nodo);
+    } 
+    | Expresion '>' Expresion   {$$= {gram: new Logicas($1.gram,$2,$3.gram,@1.first_line,@1.first_column), nodo: new NODO("Expresion")};
+    
+        $$.nodo.hijos.push($1.nodo);
+        $$.nodo.hijos.push(new NODO($2));
+        $$.nodo.hijos.push($3.nodo);
+    }
+    | Expresion '||' Expresion  {$$= {gram: new Logicas($1.gram,$2,$3.gram,@1.first_line,@1.first_column), nodo: new NODO("Expresion")};
+        $$.nodo.hijos.push($1.nodo);
+        $$.nodo.hijos.push(new NODO($2));
+        $$.nodo.hijos.push($3.nodo);
+    }
+    | Expresion '&&' Expresion  {$$= {gram: new Logicas($1.gram,$2,$3.gram,@1.first_line,@1.first_column), nodo: new NODO("Expresion")};
+    
+        $$.nodo.hijos.push($1.nodo);
+        $$.nodo.hijos.push(new NODO($2));
+        $$.nodo.hijos.push($3.nodo);
+    }
+    | Expresion '?' Expresion ':' Expresion {$$={gram:new TERNARIO($1.gram,$3.gram,$5.gram,@1.first_line,@1.first_column),nodo: new NODO("Expresion")};
+        $$.nodo.hijos.push($1.nodo);
+        $$.nodo.hijos.push(new NODO($2));
+        $$.nodo.hijos.push($3.nodo);
+        $$.nodo.hijos.push(new NODO($4));
+        $$.nodo.hijos.push($5.nodo);
+    }
+    | ID '[' Expresion ']'      {$$= {gram:new AccesoArr($1.toLowerCase(),$3.gram,@1.first_line,@1.first_column), nodo: new NODO("Acceso_Arr")};
+        $$.nodo.hijos.push(new NODO($1));
+        $$.nodo.hijos.push(new NODO("["));
+        $$.nodo.hijos.push($3.nodo);
+        $$.nodo.hijos.push(new NODO("]"));
+    }
+    | ID '[[' Expresion ']]'    {$$= {gram:new AccesLista($1,$3.gram,@1.first_line,@1.first_column), nodo:new NODO("Acceso_Lista")};
+        $$.nodo.hijos.push(new NODO($1));
+        $$.nodo.hijos.push(new NODO("[["));
+        $$.nodo.hijos.push($3.nodo);
+        $$.nodo.hijos.push(new NODO("]]"));
+    } 
+    | len '(' Expresion ')'     {$$={gram:new Especiales("1",$3.gram,@1.first_line,@1.first_column), nodo: new NODO("Especiales")};
+        $$.nodo.hijos.push(new NODO($1));
+        $$.nodo.hijos.push($3.nodo);
+    }
+    | tLow '(' Expresion ')'    {$$={gram:new Especiales("2",$3.gram,@1.first_line,@1.first_column), nodo: new NODO("Especiales")};
+        $$.nodo.hijos.push(new NODO($1));
+        $$.nodo.hijos.push($3.nodo);
+    }
+    | tUpp '(' Expresion ')'    {$$={gram: new Especiales("3",$3.gram,@1.first_line,@1.first_column), nodo: new NODO("Especiales")};
+        $$.nodo.hijos.push(new NODO($1));
+        $$.nodo.hijos.push($3.nodo);
+    }
+    | trun '(' Expresion ')'    {$$={gram: new Especiales("4",$3.gram,@1.first_line,@1.first_column), nodo: new NODO("Especiales")};
+        $$.nodo.hijos.push(new NODO($1));
+        $$.nodo.hijos.push($3.nodo);
+    }
+    | round '(' Expresion ')'   {$$={gram: new Especiales("5",$3.gram,@1.first_line,@1.first_column), nodo: new NODO("Especiales")};
+        $$.nodo.hijos.push(new NODO($1));
+        $$.nodo.hijos.push($3.nodo);
+    }
+    | typ '(' Expresion ')'     {$$={gram: new Especiales("6",$3.gram,@1.first_line,@1.first_column), nodo: new NODO("Especiales")};
+        $$.nodo.hijos.push(new NODO($1));
+        $$.nodo.hijos.push($3.nodo);
+    }
 
-F:  
-    DECIMAL                     {$$=new Literal($1,Tipo.DOUBLE,@1.first_line,@1.first_column);}
-    | ENTERO                    {$$=new Literal($1,Tipo.INT,@1.first_line,@1.first_column);}
-    | CADENA                    {$$=new Literal($1,Tipo.STRING,@1.first_line,@1.first_column);}
-    | CHAR                      {$$=new Literal($1,Tipo.CHAR,@1.first_line,@1.first_column);}
-    | ttrue                     {$$=new Literal($1,Tipo.BOOLEAN,@1.first_line,@1.first_column);}
-    | tfalse                    {$$=new Literal($1,Tipo.BOOLEAN,@1.first_line,@1.first_column);}
-    | ID                        {$$=new Acceso($1.toLowerCase(),@1.first_line,@1.first_column);}
-    | ID '(' ')'                {$$=new Llamada($1.toLowerCase(),null,@1.first_line,@1.first_column);}
-    | ID '(' ARG ')'            {$$=new Llamada($1.toLowerCase(),$3,@1.first_line,@1.first_column);}
-    | ID '--'                   {$$= new Asignacion($1.toLowerCase(),"-",true,@1.first_line,@1.first_column);}
-    | ID '++'                   {$$= new Asignacion($1.toLowerCase(),"+",true,@1.first_line,@1.first_column);}
+    
+    | DECIMAL                   {$$={gram:new Literal($1,Tipo.DOUBLE,@1.first_line,@1.first_column),nodo: new NODO("Expresion")}; 
+    
+        $$.nodo.hijos.push(new NODO($1));
+    }
+    | ENTERO                    {$$={gram:new Literal($1,Tipo.INT,@1.first_line,@1.first_column),nodo: new NODO("Expresion")};
+        $$.nodo.hijos.push(new NODO("INT"));
+    }
+    | CADENA                    {$$={gram:new Literal($1,Tipo.STRING,@1.first_line,@1.first_column),nodo: new NODO("Expresion")};
+    
+        $$.nodo.hijos.push(new NODO("STRING"));
+    }
+    | CHAR                      {$$={gram:new Literal($1,Tipo.CHAR,@1.first_line,@1.first_column),nodo: new NODO("Expresion")};
+    
+        $$.nodo.hijos.push(new NODO("CHAR"));
+    }
+    | ttrue                     {$$={gram: new Literal($1,Tipo.BOOLEAN,@1.first_line,@1.first_column), nodo: new NODO("Expresion")};
+    
+        $$.nodo.hijos.push(new NODO("BOOLEAN"));
+    }
+    | tfalse                    {$$={gram: new Literal($1,Tipo.BOOLEAN,@1.first_line,@1.first_column), nodo: new NODO("Expresion")};
+
+        $$.nodo.hijos.push(new NODO("BOOLEAN"));   
+    }
+    | ID                        {$$={gram:new Acceso($1.toLowerCase(),@1.first_line,@1.first_column),nodo: new NODO("Expresion")};
+    
+        $$.nodo.hijos.push(new NODO("ID"));
+    }
+    | ID '(' ')'                {$$={gram: new Llamada($1.toLowerCase(),null,@1.first_line,@1.first_column),nodo: new NODO("Llamada")};
+        $$.nodo.hijos.push(new NODO("ID"))
+        $$.nodo.hijos.push(new NODO("("))
+        $$.nodo.hijos.push(new NODO(")"))
+    }
+    | ID '(' ARG ')'            {$$={gram: new Llamada($1.toLowerCase(),$3.gram,@1.first_line,@1.first_column),nodo:new NODO("Llamda")};
+    
+        $$.nodo.hijos.push(new NODO("ID"));
+        $$.nodo.hijos.push(new NODO("("));
+        $$.nodo.hijos.push($3.nodo)
+        $$.nodo.hijos.push(new NODO(")"));
+    }
+    | ID '--'                   {$$= {gram:new Asignacion($1.toLowerCase(),"-",false,@1.first_line,@1.first_column),nodo:new NODO("Asignacion")};
+        $$.nodo.hijos.push(new NODO($1));
+        $$.nodo.hijos.push(new NODO($2));
+    }
+    | ID '++'                   {$$= {gram:new Asignacion($1.toLowerCase(),"+",false,@1.first_line,@1.first_column),nodo:new NODO("Asignacion")};
+        $$.nodo.hijos.push(new NODO($1));
+        $$.nodo.hijos.push(new NODO($2));
+    }
 ;

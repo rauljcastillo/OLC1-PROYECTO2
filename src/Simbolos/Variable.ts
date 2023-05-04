@@ -1,14 +1,9 @@
 
 export class Variable {
-    
-    private tipo:number
-    private id:string;
-    private valor: any;
-
-    constructor(tipo:number,id:string,valor:any){
+    constructor(private tipo:number,private id:string, private valor:any){
         this.tipo = tipo;
         this.id=id;
-        this.valor=valor    
+        this.valor=valor;
     }
 
     public getValor(){

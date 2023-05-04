@@ -23,7 +23,7 @@ export class Llamada extends Instruccion {
             for(let i=0;i<this.params.length;i++){
                 let val=this.params[i].ejecutar(nuevo)
                 temp=paramts[i].getVariable();
-                nuevo.guardar(temp.tipo,temp.id,val.valor);
+                nuevo.guardar(temp.tipo,temp.id,val.valor,temp.linea,temp.columna);
 
             }
 

@@ -18,7 +18,7 @@ export class Literal extends Expresion{
             case Tipo.INT:
                 return {valor:parseInt(this.valor),type: Tipo.INT};
             case Tipo.STRING:
-                return {valor:this.valor.replace("\"","").replace("\"",""),type: Tipo.STRING};
+                return {valor:this.valor.substring(0,this.valor.length),type: Tipo.STRING};
             
             case Tipo.DOUBLE:
                 return {valor:parseFloat(this.valor),type: Tipo.DOUBLE};

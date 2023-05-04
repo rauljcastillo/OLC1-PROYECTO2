@@ -15,7 +15,7 @@ app.get('/', (req, res) => {
   res.send('¡Hola, mundo!');
 });
 
-app.listen(3000, () => {
+app.listen(4000, () => {
   console.log('Servidor iniciado en el puerto 3000');
 });
 
@@ -28,27 +28,33 @@ app.post("/texto", (req, res) => {
   let consola = new Consola();
   tabla.eliminar();
 
+
+  
+
   try {
-    for (let inst of resultado) {
+    for (let inst of resultado.gram) {
       if(inst instanceof Declaracion || inst instanceof Funciones){
         inst.ejecutar(global,consola)
       }
     }
   } catch (error) {
+    consola.borrar();
     consola.escribirCadena(error.message);
   }
 
   try {
-    for (let inst of resultado) {
+    for (let inst of resultado.gram) {
       if(inst instanceof Main){
         inst.ejecutar(global,consola)
         break;
       }
     }
   } catch (error) {
+    consola.borrar();
     consola.escribirCadena(error.message);
   }
-
   
-  res.send({ message: "Nitido", valor: consola.getCadena() });
+
+
+  res.send({valor: consola.getCadena(),table: tabla.graficarTabla(),tree: resultado.nodo.graficarA()});
 })

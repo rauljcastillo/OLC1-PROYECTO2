@@ -1,3 +1,11 @@
-let a="Raul"
+class CArro{
+    constructor(nombre){
+        this.nombre=nombre
+    }
 
-console.log(String.fromCharCode(70));
+    hijos(...asignar){
+        print(asignar)
+    }
+}
+
+

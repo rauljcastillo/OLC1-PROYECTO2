@@ -10,7 +10,7 @@ export class Lista extends Instruccion{
 
     public ejecutar(entorno: Ambiente, consola: Consola) {
         if(this.tipo==this.tipo1){
-            if(!entorno.guardar(this.tipo,this.id,[])){
+            if(!entorno.guardar(this.tipo,this.id,[],this.linea,this.columna)){
                 throw new Error(`La lista ${this.id} ya existe`);
             }
         }
