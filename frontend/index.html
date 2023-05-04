@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <link rel="stylesheet" href="./estilo.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/6.65.7/codemirror.min.css" />
+    <link rel="stylesheet"
+        href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.52.2/theme/material-darker.min.css" />
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.63.1/codemirror.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.63.1/mode/javascript/javascript.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/6.65.7/addon/edit/matchbrackets.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/6.65.7/addon/edit/closebrackets.min.js"></script>
+    <script src="https://d3js.org/d3.v5.min.js"></script>
+    <script src="https://unpkg.com/@hpcc-js/wasm@0.3.11/dist/index.min.js"></script>
+    <script src="https://unpkg.com/d3-graphviz@3.0.5/build/d3-graphviz.js"></script>
+</head>
+
+<body>
+    <nav>
+        <div class="container-fluid">
+            <span>TypeWise</span>
+        </div>
+        <div class="opciones">
+            <span id="home">Home</span>
+            <span id="editor">Editor</span>
+            <span id="reporte">Reportes</span>
+        </div>
+
+    </nav>
+
+    <main class="main">
+        <button id="ejecutar">Correr</button>
+        <div class="editor">
+            
+
+            <form id="form1">
+                <p>Entrada</p>
+                <textarea id="codigo" name="codigo"></textarea>
+            </form>
+
+            <form id="form2">
+                <p>Salida</p>
+                <textarea id="salida" name="codigo" disabled></textarea>
+            </form>
+        </div>
+
+        <div class="botones">
+            <button>Crear</button>
+            <button class="contenedor-btn">
+                <label for="btn-file">Cargar Archivo</label>
+                <input type="file" id="btn-file">
+            </button>
+            <button>Guardar</button>
+            <button onclick="limpiarConsola()">Limpiar</button>
+        </div>
+    </main>
+
+    <div class="home">
+        <div>
+            <p>Raúl Josue Castillo Barco</p>
+            <p>202001932</p>
+        </div>
+    </div>
+    <div class="Reportes">
+        <button id="grafTab">Tabla de Simbolos</button>
+        <button id="grafAST">Grafica AST</button>
+    </div>
+
+    <div id="container-graph">
+        <div id="table">
+
+        </div>
+
+        <div id="tree">
+        </div>
+    </div>
+
+
+
+    <script src="./logica.js">
+        
+    </script>
+</body>
+
+</html>

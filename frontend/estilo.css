@@ -1,0 +1,224 @@
+* {
+    padding: 0;
+    margin: 0;
+}
+
+body {
+    height: 100vh;
+    width: 100vw;
+    padding: 0;
+    margin: 0;
+    box-sizing: border-box;
+    font-family: 'Lucida Sans', 'Lucida Sans Regular', 'Lucida Grande', 'Lucida Sans Unicode', Geneva, Verdana, sans-serif;
+    
+    
+}
+
+nav {
+    width: 100%;
+    height: 70px;
+    background-color: #1C2833 ;
+    box-sizing: border-box;
+    padding: 9px;
+    display: flex;
+    justify-content: flex-start;
+}
+
+nav .container-fluid{
+    display: flex;
+    align-items: center;
+    box-sizing: border-box;
+    height: 100%;
+    padding: 8px;
+    width: 20%;
+    font-size: 20pt;
+    color: white;
+    font-weight: bold;
+    
+}
+
+nav .opciones {
+    display: flex;
+    align-items: center;
+    width: 40%;
+    padding: 8px;
+    justify-content: space-around;
+    font-size: 16pt;
+    color: white;
+    font-weight: bold;
+}
+
+.opciones span {
+    width: 120px;
+    height: 40px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+
+}
+
+.opciones span:hover {
+    box-shadow: 0px 5px 15px rgba(0, 0, 0, 0.35) ;
+    cursor: pointer;
+}
+
+/*Clase main*/ 
+.main {
+    width: 100%;
+    height: calc(100% - 70px);
+    background-color: #99A3A4;
+    position: relative;
+
+}
+
+form {
+    
+    width: 50%;
+    padding: 10px 5px 0px 5px;
+    box-sizing: border-box;
+}
+
+
+form >p {
+    font-size: 17pt;
+    text-align: center;
+    font-weight: bold;
+}
+
+
+.editor {
+    width: 100%;
+    display: flex;
+    height: 90%
+}
+
+.botones {
+    width: 100%;
+    height: 10%;
+    display: flex;
+    justify-content: space-evenly;
+    align-items: center;
+
+}
+
+
+.botones button {
+    height: 40px;
+    width: 160px;
+    border-radius: 25px;
+    border: none;
+    background-color: #229954;
+}
+
+
+.main>button {
+    position: absolute;
+    left: calc(50% - 35px);
+    width: 70px;
+    border-radius: 22px;
+    height: 30px;
+    top: 2px;
+    border: none;
+    background-color: #52BE80;
+}
+
+.editor #form1 .CodeMirror {
+    width: 100%;
+    height: calc(100% - 27px);
+    font-size: 15pt;
+    
+}
+
+.editor #form2 .CodeMirror {
+    width: 100%;
+    font-size: 13pt;
+    box-sizing: border-box;
+    height: calc(100% - 27px);
+    
+}
+
+/* Home*/
+.home {
+    width: 100%;
+    height: calc(100% - 70px);
+    background-color: #99A3A4;
+    display: none;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
+}
+
+.home>div {
+    width: 30%;
+    height: 50%;
+    border-radius: 25px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    font-size: 20pt;
+    font-weight: bold;
+    box-shadow: 0px 5px 15px rgba(0, 0, 0, 0.35);
+}
+
+.Reportes {
+    width: 100%;
+    height: calc(100% - 70px);
+    background-color: #99A3A4;
+    display: none;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
+}
+
+.Reportes > button {
+    width: 300px;
+    height: 180px;
+    margin: 20px;
+    border-radius: 25px;
+    font-size: 20pt;
+    font-weight: bold;
+    border: none;
+    background-color: #E8DAEF;
+}
+
+.contenedor-btn input[type="file"] {
+    appearance: none;
+    visibility: hidden;
+    opacity: 0;
+    display: none;
+}
+
+.contenedor-btn label {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+}
+
+
+#container-graph {
+    width: 100%;
+    height: calc(100% - 70px);
+    background-color: #808B96;
+    display: none;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+}
+
+#container-graph #table {
+    width: 90%;
+    height: 90%;
+}
+
+
+#container-graph #tree {
+    width: 90%;
+    height: 90%;;
+    overflow: hidden;
+}
